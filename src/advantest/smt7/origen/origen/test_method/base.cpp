@@ -22,21 +22,13 @@ int Base::offline() {
 
 void Base::initialize()
 {
-	addParameter("testName",
-				 "string",
-				 &_testName,
+	addParameter("testName", "string", &_testName,
 				 testmethod::TM_PARAMETER_INPUT);
-	addParameter("forcePass",
-				 "int",
-				 &_forcePass,
+	addParameter("forcePass", "int", &_forcePass,
 				 testmethod::TM_PARAMETER_INPUT);
-	addParameter("onPassFlag",
-				 "string",
-				 &_onPassFlag,
+	addParameter("onPassFlag", "string", &_onPassFlag,
 				 testmethod::TM_PARAMETER_INPUT);
-	addParameter("onFailFlag",
-				 "string",
-				 &_onFailFlag,
+	addParameter("onFailFlag", "string", &_onFailFlag,
 				 testmethod::TM_PARAMETER_INPUT);
 
 	bFirstRun = true;
@@ -84,11 +76,17 @@ void Base::run() {
 }
 
 void Base::datalog(double value) {
-	TESTSET().testnumber(testNumber()).cont(true).TEST("", testName(), noLimits(), value);
+	TESTSET()
+      .testnumber(testNumber())
+      .cont(true)
+      .TEST("", testName(), noLimits(), value);
 }
 
 void Base::datalog(string testName, double value) {
-	TESTSET().testnumber(testNumber(testName)).cont(true).TEST("", testName, noLimits(), value);
+	TESTSET()
+      .testnumber(testNumber(testName))
+      .cont(true)
+      .TEST("", testName, noLimits(), value);
 }
 
 void Base::judgeAndDatalog(double value) {
@@ -98,9 +96,10 @@ void Base::judgeAndDatalog(double value) {
     suiteFailed[CURRENT_SITE_NUMBER()] = !preJudge(value);
   }
 
-	TESTSET().testnumber(testNumber()).testtext(stdftestName()).cont(true).judgeAndLog_ParametricTest("", testName(),
-				_forcePass ? toNALimit(testLimits().TEST_API_LIMIT) : testLimits().TEST_API_LIMIT,
-			    value);
+	TESTSET()
+      .testnumber(testNumber()).testtext(stdftestName())
+      .cont(true)
+      .judgeAndLog_ParametricTest("", testName(), _forcePass ? toNALimit(testLimits().TEST_API_LIMIT) : testLimits().TEST_API_LIMIT, value);
 
 	// Preserve the first bin assigned within this test suite as the final one
 	if ((!alreadyFailed)&&(!_forcePass)&&(suiteFailed[CURRENT_SITE_NUMBER()])) {
@@ -115,9 +114,9 @@ void Base::judgeAndDatalog(string testName, double value) {
       suiteFailed[CURRENT_SITE_NUMBER()] = !preJudge(testName, value);
     }
 
-	TESTSET().testnumber(testNumber(testName)).testtext(stdftestName()).cont(true).judgeAndLog_ParametricTest("", testName,
-				_forcePass ? toNALimit(testLimits(testName).TEST_API_LIMIT) : testLimits(testName).TEST_API_LIMIT,
-				value);
+	TESTSET().testnumber(testNumber(testName)).testtext(stdftestName())
+      .cont(true)
+      .judgeAndLog_ParametricTest("", testName, _forcePass ? toNALimit(testLimits(testName).TEST_API_LIMIT) : testLimits(testName).TEST_API_LIMIT, value);
 
 	// Preserve the first bin assigned within this test suite as the final one
 	if ((!alreadyFailed)&&(!_forcePass)&&(suiteFailed[CURRENT_SITE_NUMBER()])) {
