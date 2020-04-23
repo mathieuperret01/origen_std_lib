@@ -425,13 +425,13 @@ public class Functional_test extends Base {
 
     // Assume for now that if force pass is set then branching decision could be dependent on the
     // result of this test, in future add another attribute to control async processing on/off
-    if (!sync_par && !forcePass) {
+    if (!sync_data && !forcePass) {
       releaseTester();
     }
 
     if (_capture > 0) {
       _capturedData =
-          digCapture.getSerialBitsAsLongArray(measurement.getSignal(_pin).getDutSignalName());
+          digCapture.getSerialBitsAsBitSequence(measurement.getSignal(_pin).getDutSignalName());
     }
   }
 
@@ -449,16 +449,13 @@ public class Functional_test extends Base {
         }
       }
       if (funcResult != null) {
-        //judgeAndDatalog(FUNC, dynamicPassed.and(funcResult.hasPassed()));    -- Modified by HB 21/03/2019
-        judgeAndDatalog(FUNC, DatalogUtils.ftd2Ptd(dynamicPassed.and(funcResult.hasPassed())));
+        judgeAndDatalog(FUNC, dynamicPassed.and(funcResult.hasPassed()));
       } else {
-        //judgeAndDatalog(FUNC, dynamicPassed.and(funcResult.hasPassed()));    -- Modified by HB 21/03/2019
-        judgeAndDatalog(FUNC, DatalogUtils.ftd2Ptd(dynamicPassed.and(funcResult.hasPassed())));
+        judgeAndDatalog(FUNC, dynamicPassed);
       }
     } else {
       if (funcResult != null) {
-        //judgeAndDatalog(FUNC, dynamicPassed.and(funcResult.hasPassed()));    -- Modified by HB 21/03/2019
-        judgeAndDatalog(FUNC, DatalogUtils.ftd2Ptd(dynamicPassed.and(funcResult.hasPassed())));
+        judgeAndDatalog(FUNC, funcResult);
       }
     }
   }
