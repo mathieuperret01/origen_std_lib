@@ -262,4 +262,26 @@ public class Base extends TestMethod {
   public void judgeAndDatalog(IParametricTestDescriptor t, MultiSiteLong MSL) {
     judgeAndDatalog(t, MSL.toMultiSiteDouble());
   }
+
+  /**
+   * From the SMT8_Origen_update.pptx
+   * Use same parametric datalogging method as smt7
+   * 0 = pass, -1 = fail
+   */
+  public static MultiSiteLong ftd2Ptd(MultiSiteBoolean results) {
+    MultiSiteLong Param = new MultiSiteLong();
+
+    for (int site : results.getActiveSites()) {
+      if (results.get(site)) {
+        Param.set(site, 0); // test passed
+      } else {
+        Param.set(site, -1); // test failed
+      }
+    }
+    return Param;
+  }
+
+  public static MultiSiteLong ftd2Ptd(IMeasurementResult results) {
+    return ftd2Ptd(results.hasPassed());
+  }
 }

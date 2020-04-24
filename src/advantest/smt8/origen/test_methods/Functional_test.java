@@ -2,6 +2,7 @@ package origen.test_methods;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import origen.common.Origen;
 import origen.common.OrigenHelpers;
 import xoc.dsa.DeviceSetupFactory;
@@ -15,12 +16,12 @@ import xoc.dta.resultaccess.IMeasurementResult;
 import xoc.dta.resultaccess.datatypes.BitSequence.BitOrder;
 import xoc.dta.resultaccess.datatypes.MultiSiteBitSequence;
 import xoc.dta.setupaccess.IParallelGroup;
-import xoc.dta.testdescriptor.IFunctionalTestDescriptor;
+import xoc.dta.testdescriptor.IParametricTestDescriptor;
 
 /** The Function test template for all functional tests */
 public class Functional_test extends Base {
 
-  public IFunctionalTestDescriptor FUNC;
+  public IParametricTestDescriptor PTD;
 
   // Class variables
 
@@ -439,24 +440,24 @@ public class Functional_test extends Base {
   public void processResults() {
     logTrace("Functional_test", "processResults");
 
-    if (_hasDynamicMeas && dynamicMeasurementResults.size() > 0) {
-      MultiSiteBoolean dynamicPassed = null;
-      for (IMeasurementResult result : dynamicMeasurementResults) {
-        if (dynamicPassed == null) {
-          dynamicPassed = result.hasPassed();
-        } else {
-          dynamicPassed = dynamicPassed.and(result.hasPassed());
+    if(_hasDynamicMeas && dynamicMeasurementResults.size() > 0) {
+        MultiSiteBoolean dynamicPassed = null;
+        for (IMeasurementResult result: dynamicMeasurementResults) {
+            if (dynamicPassed == null) {
+                dynamicPassed = result.hasPassed();
+            } else {
+                dynamicPassed = dynamicPassed.and(result.hasPassed());
+            }
         }
-      }
-      if (funcResult != null) {
-        judgeAndDatalog(FUNC, dynamicPassed.and(funcResult.hasPassed()));
-      } else {
-        judgeAndDatalog(FUNC, dynamicPassed);
-      }
+        if (funcResult != null) {
+            judgeAndDatalog(PTD, ftd2Ptd(dynamicPassed.and(funcResult.hasPassed())));
+        } else {
+            judgeAndDatalog(PTD, ftd2Ptd(dynamicPassed));
+        }
     } else {
-      if (funcResult != null) {
-        judgeAndDatalog(FUNC, funcResult);
-      }
+        if (funcResult != null) {
+            judgeAndDatalog(PTD, ftd2Ptd(funcResult));
+        }
     }
   }
 }
