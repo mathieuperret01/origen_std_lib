@@ -1,18 +1,20 @@
 package origen.test_methods;
 
 import java.io.File;
+
 import origen.common.Origen;
 import origen.common.OrigenHelpers;
 import xoc.dsa.DeviceSetupFactory;
 import xoc.dsa.IDeviceSetup;
 import xoc.dta.datatypes.MultiSiteDouble;
 import xoc.dta.datatypes.MultiSiteDoubleArray;
-import xoc.dta.resultaccess.IDigInOutActionResults;
-import xoc.dta.resultaccess.IDigInOutActionResults.IIforceVmeasResults;
-import xoc.dta.resultaccess.IDigInOutActionResults.IVforceImeasResults;
+import xoc.dta.resultaccess.IDcVIResults;
+import xoc.dta.resultaccess.IDcVIResults.IImeasResults;
+import xoc.dta.resultaccess.IDcVIResults.IVmeasResults;
 import xoc.dta.resultaccess.IMeasurementResult;
 import xoc.dta.testdescriptor.IFunctionalTestDescriptor;
 import xoc.dta.testdescriptor.IParametricTestDescriptor;
+import xoc.dta.workspace.IWorkspace;
 
 /** An example test method using test descriptor */
 public class DC_Measurement extends Base {
@@ -44,6 +46,7 @@ public class DC_Measurement extends Base {
 
   int _badc;
   String _actionName;
+  String _actionForce;
   public DC_Measurement origen;
 
   static OrigenHelpers origenHelpers;
@@ -160,18 +163,21 @@ public class DC_Measurement extends Base {
     message(Origen.LOG_METHODTRACE, "Setting up " + _measure + " measurement");
 
     if (_measure == MEAS.VOLT) {
-      _actionName = "iforceVmeas";
+      _actionName = "Vmeas";
+      _actionForce = "IForce";
     } else {
-      _actionName = "vforceImeas";
+      _actionName = "Imeas";
+      _actionForce = "vForce";
     }
 
     if (_applyShutdown) {
       if (_shutdownPattern.isEmpty()) {
         // TODO Fix the relative paths for the shutdownpattern
         shutdownPattern(measurement.getPatternName() + "_part1");
-        String workingDirectory = System.getProperty("user.dir");
+        //String workingDirectory = System.getProperty("user.dir");/
+        String workingDirectory = IWorkspace.getActiveProjectPath();
         String[] parts = _shutdownPattern.split("\\.");
-        String file = workingDirectory + "/src/patterns/" + parts[2] + ".pat";
+        String file = workingDirectory + "/src/c28tsmcnvmtester_nfc/patterns/" + parts[2] + ".pat";
         File f = new File(measurement.getPatternName());
         if (f.exists()) {
           message(Origen.LOG_METHODTRACE, "Shutdown pattern " + file + " found, using it.");
@@ -232,9 +238,25 @@ public class DC_Measurement extends Base {
 
     // ds.parallelBegin("MeasurementSequence");
     // {
+
+    if (_measure == MEAS.CURR)
+    {
+        ds.addDcVI(_pin).setDisconnect(true).setDisconnectModeHiz()
+            .vforce(_actionForce).setForceValue(_forceValue).setIclamp("0.1uA");
+    ds.addDcVI(_pin).imeas(_actionName);
+    }
+
+    else{
+            {ds.addDcVI(_pin).setDisconnect(true).setDisconnectModeHiz()
+                    .iforce(_actionForce).setForceValue(_forceValue); // investigate i clamp.setIclamp("0.1uA");
+          ds.addDcVI(_pin).vmeas(_actionName);
+            }
+    }
+
     ds.sequentialBegin("PatAndShutdownSeq");
     {
       ds.patternCall(measurement.getPatternName());
+      ds.actionCall(_actionForce);
       ds.actionCall(_actionName);
       if (_applyShutdown) {
         ds.patternCall(_shutdownPattern);
@@ -258,7 +280,8 @@ public class DC_Measurement extends Base {
     // postBody should be added and called here
 
     // protect results to be not overwritten
-    IDigInOutActionResults actionResults = measurement.digInOut(_pin).preserveActionResults();
+//    IDigInOutActionResults actionResults = measurement.digInOut(_pin).preserveActionResults();
+    IDcVIResults actionResultsDcVI = measurement.dcVI(_pin).preserveResults();
     funcResult = measurement.preserveResult();
 
     // Assume for now that if force pass is set then branching decision could be dependent on the
@@ -269,12 +292,15 @@ public class DC_Measurement extends Base {
 
     // Make the DC measurement result available
     if (_measure == MEAS.VOLT) {
-      IIforceVmeasResults ifvmResults = actionResults.iforceVmeas(_actionName);
-      intermediateResult = ifvmResults.getVoltage(_pin);
+//      IIforceVmeasResults ifvmResults = actionResults.iforceVmeas(_actionName);
+     IVmeasResults vmeasResults= actionResultsDcVI.vmeas(_actionName);
+      intermediateResult = vmeasResults.getVoltage(_pin);
 
     } else { // MEAS.CURR
-      IVforceImeasResults ifvmResults = actionResults.vforceImeas(_actionName);
-      intermediateResult = ifvmResults.getCurrent(_pin);
+//      IVforceImeasResults ifvmResults = actionResults.vforceImeas(_actionName);
+//      intermediateResult = ifvmResults.getCurrent(_pin);
+      IImeasResults imeasResults= actionResultsDcVI.imeas(_actionName);
+      intermediateResult = imeasResults.getCurrent(_pin);
     }
 
     // Loop through the sites to get the data
@@ -300,3 +326,4 @@ public class DC_Measurement extends Base {
     return MSD;
   }
 }
+
