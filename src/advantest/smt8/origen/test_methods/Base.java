@@ -1,6 +1,8 @@
 package origen.test_methods;
 
 import origen.common.Origen;
+import origen.common.OrigenDeviceData;
+import xoc.dta.ITestContext;
 import xoc.dta.TestMethod;
 import xoc.dta.datatypes.MultiSiteBoolean;
 import xoc.dta.datatypes.MultiSiteDouble;
@@ -30,6 +32,15 @@ public class Base extends TestMethod {
    * more, or less logging info
    */
   int origenLoglevel = Origen.LOG_WARNING;
+
+  /** Local instance of DeviceData storage */
+  OrigenDeviceData devDataStorage = null;
+
+  /**
+   * Keep track if release93k has been called. If background not allowed this does not
+   * automatically mean we are in background thread
+   */
+  private boolean release93kCalled = false;
 
   /**
    * Execute the checkparms() function? This is used to check if all testmethod parameters are
@@ -113,6 +124,9 @@ public class Base extends TestMethod {
 
     // Call the internal process results method
     processResults();
+
+    releaseVariables();
+
   }
 
   /**
@@ -281,7 +295,32 @@ public class Base extends TestMethod {
     return Param;
   }
 
+  public void release93k() {
+      release93kCalled = true;
+      releaseTester();
+  }
+
+  public boolean hasRelease93kBeenCalled() {
+      return release93kCalled;
+  }
+
   public static MultiSiteLong ftd2Ptd(IMeasurementResult results) {
     return ftd2Ptd(results.hasPassed());
   }
+
+  public void setOrigenDeviceDataStorage(OrigenDeviceData _devData) {
+    devDataStorage = _devData;
+  }
+
+  /** Release all locked variables */
+  private void releaseVariables() {
+      if (devDataStorage != null) {
+          devDataStorage.releaseVariables();
+      }
+  }
+
+  public ITestContext getContext() {
+    return context;
+  }
+
 }

@@ -94,7 +94,7 @@ public class Functional_test extends Base {
    */
   public Functional_test addToPatchList(String pat) {
 
-    patchList.add("C402TNVMTester.patterns." + pat);
+    patchList.add("c28tsmcnvmtester_nfc.patterns." + pat);
     return this;
   }
 
@@ -106,17 +106,26 @@ public class Functional_test extends Base {
   public Functional_test overlaySubroutinePerSite(
       String subroutinePattern, MultiSiteLong decData, int size) {
     Origen.overlaySubroutinePerSite(
-        "C402TNVMTester.patterns." + subroutinePattern, "NVM_DIN_PIN", decData, size);
+        "c28tsmcnvmtester_nfc.patterns." + subroutinePattern, "NVM_DIN_PIN", decData, size);
     return this;
   }
 
   public Functional_test overlaySubroutineAllSites(
       String subroutinePattern, long decData, int size) {
     Origen.overlaySubroutineAllSites(
-        "C402TNVMTester.patterns." + subroutinePattern, "NVM_DIN_PIN", decData, size);
+        "c28tsmcnvmtester_nfc.patterns." + subroutinePattern, "NVM_DIN_PIN", decData, size);
     return this;
   }
-
+  public Functional_test overlaySubroutineAllSites(
+          String subroutinePattern, long decData, int size, boolean fullyQulalifiedPath) {
+     String pat  = subroutinePattern;
+     if(!fullyQulalifiedPath) {
+         pat = "c28tsmcnvmtester_nfc.patterns." + subroutinePattern;
+     }
+      Origen.overlaySubroutineAllSites(
+           pat, "NVM_DIN_PIN", decData, size);
+        return this;
+      }
   /**
    * Setup the patch measurement instance Call after all patterns are added to the list The setup
    * creates a new devicesetup with fake pattern calls to all patched patterns This make sure that
