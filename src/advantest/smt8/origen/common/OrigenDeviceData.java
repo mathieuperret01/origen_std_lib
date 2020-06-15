@@ -9,8 +9,6 @@ import java.util.Map.Entry;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
-import c28tsmcnvmtester_nfc.test_methods.C28TsmcNVMDefines;
-import c28tsmcnvmtester_nfc.test_methods.C28TsmcNVMDefines.VAR;
 import origen.test_methods.Base;
 import xoc.dta.UncheckedDTAException;
 import xoc.dta.datatypes.MultiSiteBoolean;
@@ -27,9 +25,14 @@ public class OrigenDeviceData {
     private static Map<Base, OrigenDeviceData> instances = new HashMap<Base, OrigenDeviceData>();
 
     /** The global storage container of all variables of all types **/
-    private static Map<C28TsmcNVMDefines.VAR, OrigenDeviceDataTypeBase> varsInUse = new HashMap<C28TsmcNVMDefines.VAR, OrigenDeviceDataTypeBase>();
+    private static Map<OrigenVAR, OrigenDeviceDataTypeBase> varsInUse = new HashMap<OrigenVAR, OrigenDeviceDataTypeBase>();
 
 
+    public interface OrigenVAR{
+
+        Class<? extends OrigenDeviceDataTypeBase> getType();
+
+    }
 
     /** Local **/
 
@@ -38,7 +41,7 @@ public class OrigenDeviceData {
 
 
     /** List of Variables that have been reserved for the current execution of this DeviceData Instance. Always gets cleared at end of testsuite execution. */
-    private List<C28TsmcNVMDefines.VAR> reservedDeviceDataVars = new ArrayList<C28TsmcNVMDefines.VAR>();
+    private List<OrigenVAR> reservedDeviceDataVars = new ArrayList<OrigenVAR>();
 
 
     /** Acquire OrigenDeviceData instance for this testsuite
@@ -72,7 +75,7 @@ public class OrigenDeviceData {
 
         log.append("[DeviceData] ******* Dump of Variable Storage *********\n" +
         "[DeviceData] ****** Name *******  Value ******* Type\n");
-        for (Map.Entry<VAR, OrigenDeviceDataTypeBase> entry : varsInUse.entrySet())
+        for (Map.Entry<OrigenVAR, OrigenDeviceDataTypeBase> entry : varsInUse.entrySet())
         {
             log.append("[OrigenDeviceData] " + entry.getKey() + ": \t" + entry.getValue() + " \t\t(" + entry.getKey().getType() + "\n");
         }
@@ -413,7 +416,7 @@ public class OrigenDeviceData {
  */
     public void releaseVariables()
     {
-        for (C28TsmcNVMDefines.VAR varName : reservedDeviceDataVars)
+        for (OrigenVAR varName : reservedDeviceDataVars)
         {
             varsInUse.get(varName).release();
         }
@@ -423,7 +426,7 @@ public class OrigenDeviceData {
     /** Release lock on a single variable held by this Testsuite/DeviceData instance
      * @param varName : DeviceData.VAR
      */
-    public void releaseVarName(C28TsmcNVMDefines.VAR varName)
+    public void releaseVarName(OrigenVAR varName)
     {
         OrigenDeviceDataTypeBase var = varsInUse.get(varName);
         if (var == null) //sanity check. should not happen
@@ -440,7 +443,7 @@ public class OrigenDeviceData {
      * @param allowCreate : boolean
      * @return DeviceDataTypeBase
      */
-    private OrigenDeviceDataTypeBase getVariableAccess(C28TsmcNVMDefines.VAR name, boolean allowCreate)
+    private OrigenDeviceDataTypeBase getVariableAccess(OrigenVAR name, boolean allowCreate)
     {
         /**
          * if after release tester, but var is not in reserved list -> error
@@ -552,7 +555,7 @@ public class OrigenDeviceData {
      *
      * @param name : DeviceData.VAR
      */
-    private void releaseVariableInForeground(C28TsmcNVMDefines.VAR name)
+    private void releaseVariableInForeground(OrigenVAR name)
     {
         if (tmRef.hasRelease93kBeenCalled())
         {
@@ -591,13 +594,13 @@ public class OrigenDeviceData {
      *
      * @param _variableNames : DeviceData.VAR...
      */
-    public void reserve(C28TsmcNVMDefines.VAR... _variableNames)
+    public void reserve(OrigenVAR... _variableNames)
     {
         if (tmRef.hasRelease93kBeenCalled())
         {
             throw new UncheckedDTAException("reserve() must be called before release93k() in testsuite " + tmRef.getContext().getTestSuiteName());
         }
-        for (C28TsmcNVMDefines.VAR varName : _variableNames)
+        for (OrigenVAR varName : _variableNames)
         {
             if (reservedDeviceDataVars.contains(varName))
             {
@@ -610,7 +613,7 @@ public class OrigenDeviceData {
      * @param name : DeviceData.VAR name
      * @param value : HashMap String,MultiSiteDouble
      */
-    public void set(C28TsmcNVMDefines.VAR name, HashMap<String, MultiSiteDouble> value)
+    public void set(OrigenVAR name, HashMap<String, MultiSiteDouble> value)
     {
         /** a set() is only valid if
          * - we are in the foreground and no other testsuite has a lock on this variable.
@@ -641,7 +644,7 @@ public class OrigenDeviceData {
      * @param name : DeviceData.VAR
      * @param value : MultiSiteDouble
      */
-    public void set(C28TsmcNVMDefines.VAR name, MultiSiteDouble value)
+    public void set(OrigenVAR name, MultiSiteDouble value)
     {
         /** a set() is only valid if
          * - we are in the foreground and no other testsuite has a lock on this variable.
@@ -673,7 +676,7 @@ public class OrigenDeviceData {
      * @param name : DeviceData.VAR name
      * @param value : MultiSiteString
      */
-    public void set(C28TsmcNVMDefines.VAR name, MultiSiteString value)
+    public void set(OrigenVAR name, MultiSiteString value)
     {
         /** a set() is only valid if
          * - we are in the foreground and no other testsuite has a lock on this variable.
@@ -704,7 +707,7 @@ public class OrigenDeviceData {
      * @param name : DeviceData.VAR
      * @param value : value
      */
-    public void set(C28TsmcNVMDefines.VAR name, MultiSiteBoolean value)
+    public void set(OrigenVAR name, MultiSiteBoolean value)
     {
         /** a set() is only valid if
          * - we are in the foreground and no other testsuite has a lock on this variable.
@@ -735,7 +738,7 @@ public class OrigenDeviceData {
      * @param name : DeviceData.VAR
      * @param value : MultiSiteLongArray
      */
-    public void set(C28TsmcNVMDefines.VAR name, MultiSiteLongArray value)
+    public void set(OrigenVAR name, MultiSiteLongArray value)
     {
         /** a set() is only valid if
          * - we are in the foreground and no other testsuite has a lock on this variable.
@@ -766,7 +769,7 @@ public class OrigenDeviceData {
      * @param name : DeviceData.VAR
      * @param value : MultiSiteLong
      */
-    public void set(C28TsmcNVMDefines.VAR name, MultiSiteLong value)
+    public void set(OrigenVAR name, MultiSiteLong value)
     {
         /** a set() is only valid if
          * - we are in the foreground and no other testsuite has a lock on this variable.
@@ -797,7 +800,7 @@ public class OrigenDeviceData {
      * @param name : DeviceData.VAR name
      * @param value : MultiSiteBitSequence
      */
-    public void set(C28TsmcNVMDefines.VAR name, MultiSiteBitSequence value)
+    public void set(OrigenVAR name, MultiSiteBitSequence value)
     {
         /** a set() is only valid if
          * - we are in the foreground and no other testsuite has a lock on this variable.
@@ -828,7 +831,7 @@ public class OrigenDeviceData {
      * @param name : DeviceData.VAR
      * @return MultiSiteDouble
      */
-    public MultiSiteDouble getDouble(C28TsmcNVMDefines.VAR name)
+    public MultiSiteDouble getDouble(OrigenVAR name)
     {
         /** Check if Var is Reserved already by a reserve call
          * If yes, skip attempt to release variable in foreground.
@@ -857,7 +860,7 @@ public class OrigenDeviceData {
      * @param name : DeviceData.VAR
      * @return MultiSiteString
      */
-    public MultiSiteString getString(C28TsmcNVMDefines.VAR name)
+    public MultiSiteString getString(OrigenVAR name)
     {
         /** Check if Var is Reserved already by a reserve call
          * If yes, skip attempt to release variable in foreground.
@@ -884,7 +887,7 @@ public class OrigenDeviceData {
      * @param name : DeviceData.VAR
      * @return MultiSiteBoolean
      */
-    public MultiSiteBoolean getBoolean(C28TsmcNVMDefines.VAR name)
+    public MultiSiteBoolean getBoolean(OrigenVAR name)
     {
         /** Check if Var is Reserved already by a reserve call
          * If yes, skip attempt to release variable in foreground.
@@ -911,7 +914,7 @@ public class OrigenDeviceData {
      * @param name : DeviceData.VAR
      * @return HashMap String,MultiSiteDouble
      */
-    public HashMap<String, MultiSiteDouble> getMapOfDouble(C28TsmcNVMDefines.VAR name)
+    public HashMap<String, MultiSiteDouble> getMapOfDouble(OrigenVAR name)
     {
         /** Check if Var is Reserved already by a reserve call
          * If yes, skip attempt to release variable in foreground.
@@ -938,7 +941,7 @@ public class OrigenDeviceData {
      * @param name : DeviceData.VAR
      * @return MultiSiteLongArray
      */
-    public MultiSiteLongArray getLongArray(C28TsmcNVMDefines.VAR name)
+    public MultiSiteLongArray getLongArray(OrigenVAR name)
     {
         /** Check if Var is Reserved already by a reserve call
          * If yes, skip attempt to release variable in foreground.
@@ -965,7 +968,7 @@ public class OrigenDeviceData {
      * @param name : DeviceData.VAR
      * @return MultiSiteLong
      */
-    public MultiSiteLong getLong(C28TsmcNVMDefines.VAR name)
+    public MultiSiteLong getLong(OrigenVAR name)
     {
         /** Check if Var is Reserved already by a reserve call
          * If yes, skip attempt to release variable in foreground.
@@ -992,7 +995,7 @@ public class OrigenDeviceData {
      * @param name : DeviceData.VAR
      * @return MultiSiteBitSequence
      */
-    public MultiSiteBitSequence getBitSequence(C28TsmcNVMDefines.VAR name)
+    public MultiSiteBitSequence getBitSequence(OrigenVAR name)
     {
         /** Check if Var is Reserved already by a reserve call
          * If yes, skip attempt to release variable in foreground.

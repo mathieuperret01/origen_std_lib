@@ -103,6 +103,7 @@ public class Base extends TestMethod {
   @Override
   public void execute() {
     logTrace("Base", "execute");
+    release93kCalled = false;
 
     if (checkParams) {
       checkParams();

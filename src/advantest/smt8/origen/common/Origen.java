@@ -178,6 +178,7 @@ public class Origen {
       // purpose
 
       MultiSiteString batch_id = new MultiSiteString();
+      MultiSiteString offlineLotID = new MultiSiteString("QA23456");
       for (int site : context.getActiveSites()) {
         String perSiteWID = lot_id.get(site); // per site string contains batch id & wafer number
         String sBatch =
@@ -185,6 +186,10 @@ public class Origen {
                 0, Math.min(perSiteWID.length(), 8)); // this will give you batch id
         batch_id.set(site, sBatch);
         System.out.println("Wafer batch " + sBatch);
+      }
+      
+      if (context.testProgram().variables().getBoolean("SYS.OFFLINE").equalTo(true)) {
+          batch_id = offlineLotID;
       }
 
       _lotid = batch_id; // store the batch number
@@ -228,6 +233,7 @@ public class Origen {
    * queried from the test system.
    */
   public static MultiSiteLong wafer() {
+    MultiSiteString offlineWafer = new MultiSiteString("W25D0");
     if (!_waferSet) {
       MultiSiteString wafer_id =
           context.testProgram().variables().getString("STDF.WAFER_ID"); // for use with prober
@@ -236,6 +242,9 @@ public class Origen {
 
       // Expect to return something like "TR7T7290W25D0)", where 25 is the wafer number
 
+      if (context.testProgram().variables().getBoolean("SYS.OFFLINE").equalTo(true)) {
+         wafer_id = offlineWafer;
+      }
       MultiSiteLong mslWnum = new MultiSiteLong(0);
       for (int site : context.getActiveSites()) {
         String perSiteWID = wafer_id.get(site); // per site string contains batch id & wafer number
@@ -259,6 +268,8 @@ public class Origen {
     return _wafer;
   }
 
+  MultiSiteLong offlineX = new MultiSiteLong(99);
+  MultiSiteLong offlineY = new MultiSiteLong(99);
   /** Query the X and Y coordinates from the test system and set them for all sites. */
   public static void setXY() {
     MultiSiteLong x_coord =
@@ -290,6 +301,10 @@ public class Origen {
     //         _x = (int) lx;
     //         _y = (int) ly;
 
+    if (context.testProgram().variables().getBoolean("SYS.OFFLINE").equalTo(true)) {
+        x_coord = offlineX;
+        y_coord = offlineY;
+    }
     _x = x_coord;
     _y = y_coord;
     //       _xSet = true;
