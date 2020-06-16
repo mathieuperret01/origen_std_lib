@@ -268,10 +268,10 @@ public class Origen {
     return _wafer;
   }
 
-  MultiSiteLong offlineX = new MultiSiteLong(99);
-  MultiSiteLong offlineY = new MultiSiteLong(99);
   /** Query the X and Y coordinates from the test system and set them for all sites. */
   public static void setXY() {
+    MultiSiteLong offlineX = new MultiSiteLong(99);
+    MultiSiteLong offlineY = new MultiSiteLong(99);
     MultiSiteLong x_coord =
         context.testProgram().variables().getLong("STDF.X_COORD"); // for use with probe
     MultiSiteLong y_coord =
