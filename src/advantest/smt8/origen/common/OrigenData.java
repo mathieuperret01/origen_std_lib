@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import xoc.dta.datatypes.MultiSite2DLongArray;
 import xoc.dta.datatypes.MultiSiteBoolean;
 import xoc.dta.datatypes.MultiSiteLong;
 import xoc.dta.datatypes.MultiSiteLongArray;
@@ -47,17 +48,17 @@ import xoc.dta.resultaccess.datatypes.BitSequence.BitOrder;
  */
 public class OrigenData {
   private MultiSiteLongArray mem_addr;
-  private MultiSiteLongArray mem_data;
+  private MultiSite2DLongArray mem_data;
 
   private ArrayList<Long> _sortedUniqueElements;
   // For printing purposes only
-  public int bitPerDataElement = 32;
+  public int bitPerDataElement = 34;
 
   private boolean _anythingSet = false;
   /** Constructor, initialized empty address and data arrays */
   public OrigenData() {
     mem_addr = new MultiSiteLongArray();
-    mem_data = new MultiSiteLongArray();
+    mem_data = new MultiSite2DLongArray();
     _anythingSet = false;
   }
 
@@ -114,7 +115,7 @@ public class OrigenData {
   public void sort() {
     for (int site : mem_data.getActiveSites()) {
       long[] a = mem_addr.get(site);
-      long[] d = mem_data.get(site);
+      long[][] d = mem_data.get(site);
 
       List<Long> list = new ArrayList<Long>(a.length);
       for (long n : a) {
@@ -124,7 +125,7 @@ public class OrigenData {
       List<Integer> idx = sortIndex(list);
 
       long[] newA = a.clone();
-      long[] newD = d.clone();
+      long[][] newD = d.clone();
       for (int i = 0; i < a.length; i++) {
         newA[i] = a[idx.get(i)];
         newD[i] = d[idx.get(i)];
@@ -144,14 +145,14 @@ public class OrigenData {
    * @param addr
    * @param data
    */
-  public void setDataOnSite(int site, long addr, long data) {
+  public void setDataOnSite(int site, long addr, long[] data) {
     long[] a = mem_addr.get(site);
-    long[] d = mem_data.get(site);
+    long[][] d = mem_data.get(site);
     if (a == null) {
       a = new long[0];
     }
     if (d == null) {
-      d = new long[0];
+      d = new long[0][0];
     }
     int loc = valInAddr(a, addr);
     if (loc == d.length) {
@@ -171,7 +172,7 @@ public class OrigenData {
    * @param addr
    * @param data
    */
-  public void setData(long addr, long data) {
+  public void setData(long addr, long[] data) {
     for (int site : mem_data.getActiveSites()) {
       setDataOnSite(site, addr, data);
     }
@@ -212,7 +213,7 @@ public class OrigenData {
    * @param addr
    * @return
    */
-  public long getDataCommon(long addr) {
+  public long[] getDataCommon(long addr) {
     int sites[] = mem_data.getActiveSites();
     if (allSitesTheSame(addr)) {
       return getDataPerSite(sites[0], addr);
@@ -228,8 +229,8 @@ public class OrigenData {
    * @param addr
    * @return
    */
-  public MultiSiteLong getDataMSL(long addr) {
-    return getDataMSL(addr, false, "");
+  public MultiSiteLongArray getDataMSLA(long addr) {
+    return getDataMSLA(addr, false, "");
   }
 
   /**
@@ -239,36 +240,50 @@ public class OrigenData {
    * @param addr
    * @return
    */
-  public MultiSiteLong getDataMSL(long addr, String errorMsg) {
-    return getDataMSL(addr, true, errorMsg);
+  public MultiSiteLongArray getDataMSLA(long addr, String errorMsg) {
+    return getDataMSLA(addr, true, errorMsg);
   }
 
-  private MultiSiteLong getDataMSL(long addr, boolean errorOnNotSet, String errorMsg) {
-    MultiSiteLong result = new MultiSiteLong();
-    for (int site : mem_data.getActiveSites()) {
-      if (addrIsSet(site, addr)) {
-        result.set(site, getDataPerSite(site, addr));
-      } else {
-        if (errorOnNotSet) {
-          throw new Error(errorMsg);
+//  private MultiSiteLong getDataMSL(long addr, boolean errorOnNotSet, String errorMsg) {
+//    MultiSiteLong result = new MultiSiteLong();
+//    for (int site : mem_data.getActiveSites()) {
+//      if (addrIsSet(site, addr)) {
+//        result.set(site, getDataPerSite(site, addr));
+//      } else {
+//        if (errorOnNotSet) {
+//          throw new Error(errorMsg);
+//        }
+//        result.set(site, -1);
+//      }
+//    }
+//    return result;
+//  }
+
+  private MultiSiteLongArray getDataMSLA(long addr, boolean errorOnNotSet, String errorMsg) {
+      MultiSiteLongArray result = new MultiSiteLongArray();
+      for (int site : mem_data.getActiveSites()) {
+        if (addrIsSet(site, addr)) {
+          result.set(site, getDataPerSite(site, addr));
+        } else {
+          if (errorOnNotSet) {
+            throw new Error(errorMsg);
+          }
+          result.set(site, new long[] {-1,-1,-1,-1}); // 4 parts (each parts corresponds to 34bits)
         }
-        result.set(site, -1);
       }
+      return result;
     }
-    return result;
-  }
-
   /**
    * Returns whether or not all the sites have the same data for this addr
    *
    * @param addr
    * @return
    */
-  public boolean allSitesTheSame(long addr) {
-    long commonData = -1;
+public boolean allSitesTheSame(long addr) {
+    long[] commonData = new long[]{-1,-1,-1,-1};
     boolean addrFound = false, addrNotFound = false;
     for (int site : mem_data.getActiveSites()) {
-      long[] d = mem_data.get(site);
+      long[][] d = mem_data.get(site);
       long[] a = mem_addr.get(site);
       int loc = valInAddr(a, addr);
       if (loc != a.length) {
@@ -277,13 +292,17 @@ public class OrigenData {
         }
         // Addr is found
         addrFound = true;
-        if (commonData == -1) {
-          commonData = d[loc];
-        } else {
-          if (commonData != d[loc]) {
-            // Not all data the same for this addr over all sits
-            return false;
-          }
+
+        for(int i = 0 ; i < 4 ; i++) {
+            if (commonData[i] == -1) {
+                commonData[i] = d[loc][i];
+            }
+            else {
+                if(commonData[i] != d[loc][i]) {
+                     // Not all data the same for this addr over all sits
+                    return false;
+                }
+            }
         }
       } else {
         addrNotFound = true;
@@ -302,14 +321,29 @@ public class OrigenData {
     System.out.println(getUniqueAddressList());
     for (int site : mem_data.getActiveSites()) {
       System.out.println("Site: " + site);
-      long[] d = mem_data.get(site);
+      long[][] d = mem_data.get(site);
       long[] a = mem_addr.get(site);
       for (int i = 0; i < d.length; i++) {
         System.out.println(
             a[i]
                 + "\t"
                 + OrigenHelpers.longToPaddedHexString(
-                    d[i], bitPerDataElement / 4, BitOrder.RIGHT_TO_LEFT));
+                    d[i][0], bitPerDataElement / 4, BitOrder.RIGHT_TO_LEFT));
+        System.out.println(
+                a[i]
+                    + "\t"
+                    + OrigenHelpers.longToPaddedHexString(
+                        d[i][1], bitPerDataElement / 4, BitOrder.RIGHT_TO_LEFT));
+        System.out.println(
+                a[i]
+                    + "\t"
+                    + OrigenHelpers.longToPaddedHexString(
+                        d[i][2], bitPerDataElement / 4, BitOrder.RIGHT_TO_LEFT));
+        System.out.println(
+                a[i]
+                    + "\t"
+                    + OrigenHelpers.longToPaddedHexString(
+                        d[i][3], bitPerDataElement / 4, BitOrder.RIGHT_TO_LEFT));
       }
     }
   }
@@ -319,7 +353,7 @@ public class OrigenData {
     // Lazy man's approach: Basically just throwing the reference to the old MSLarray away
     // Let's hope the garbage collector removes the old references nicely
     mem_addr = new MultiSiteLongArray();
-    mem_data = new MultiSiteLongArray();
+    mem_data = new MultiSite2DLongArray();
     _anythingSet = false;
   }
   // Some private helper functions
@@ -352,8 +386,8 @@ public class OrigenData {
    * @param addr
    * @return
    */
-  private long getDataPerSite(int site, long addr) {
-    long[] d = mem_data.get(site);
+  private long[] getDataPerSite(int site, long addr) {
+    long[][] d = mem_data.get(site);
     long[] a = mem_addr.get(site);
     int loc = valInAddr(a, addr);
     return d[loc];
@@ -370,6 +404,18 @@ public class OrigenData {
     System.arraycopy(origArray, 0, newArray, 0, origArray.length);
     return newArray;
   }
+
+/**
+ * Expand the array by 1
+ *
+ * @param origArray
+ * @return
+ */
+private long[][] expand(long[][] origArray) {
+  long[][] newArray = new long[origArray.length + 1][4];
+  System.arraycopy(origArray, 0, newArray, 0, origArray.length);
+  return newArray;
+}
 }
 
 class DataPair<T> {

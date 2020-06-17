@@ -94,7 +94,7 @@ public class Functional_test extends Base {
    */
   public Functional_test addToPatchList(String pat) {
 
-    patchList.add("c28tsmcnvmtester_nfc.patterns." + pat);
+    patchList.add(pat);
     return this;
   }
 
@@ -106,26 +106,26 @@ public class Functional_test extends Base {
   public Functional_test overlaySubroutinePerSite(
       String subroutinePattern, MultiSiteLong decData, int size) {
     Origen.overlaySubroutinePerSite(
-        "c28tsmcnvmtester_nfc.patterns." + subroutinePattern, "NVM_DIN_PIN", decData, size);
+        subroutinePattern, "NVM_DIN_PIN", decData, size);
     return this;
   }
 
   public Functional_test overlaySubroutineAllSites(
       String subroutinePattern, long decData, int size) {
     Origen.overlaySubroutineAllSites(
-        "c28tsmcnvmtester_nfc.patterns." + subroutinePattern, "NVM_DIN_PIN", decData, size);
+        subroutinePattern, "NVM_DIN_PIN", decData, size);
     return this;
   }
-  public Functional_test overlaySubroutineAllSites(
-          String subroutinePattern, long decData, int size, boolean fullyQulalifiedPath) {
-     String pat  = subroutinePattern;
-     if(!fullyQulalifiedPath) {
-         pat = "c28tsmcnvmtester_nfc.patterns." + subroutinePattern;
-     }
-      Origen.overlaySubroutineAllSites(
-           pat, "NVM_DIN_PIN", decData, size);
-        return this;
-      }
+//  public Functional_test overlaySubroutineAllSites(
+//          String subroutinePattern, long decData, int size, boolean fullyQulalifiedPath) {
+//     String pat  = subroutinePattern;
+//     if(!fullyQulalifiedPath) {
+//         pat = "c28tsmcnvmtester_nfc.patterns." + subroutinePattern;
+//     }
+//      Origen.overlaySubroutineAllSites(
+//           pat, "NVM_DIN_PIN", decData, size);
+//        return this;
+//      }
   /**
    * Setup the patch measurement instance Call after all patterns are added to the list The setup
    * creates a new devicesetup with fake pattern calls to all patched patterns This make sure that
@@ -157,10 +157,10 @@ public class Functional_test extends Base {
     IDeviceSetup ds = DeviceSetupFactory.createInstance();
     ds.importSpec(dynamicPatMeas.getSpecificationName());
     for (String pat : dynamicPatternList) {
-      ds.parallelBegin(pat);
+      ds.parallelBegin(pat.replaceAll("^.+\\.", ""));
       {
         ds.setBypassable();
-        ds.patternCall("C402TNVMTester.patterns." + pat);
+        ds.patternCall(pat);
       }
       ds.parallelEnd();
     }
@@ -198,7 +198,7 @@ public class Functional_test extends Base {
     MultiSiteBoolean allSites = new MultiSiteBoolean(true);
     List<IParallelGroup> paraGroups = dynamicPatMeas.operatingSequence().getParallelGroups();
     for (IParallelGroup iParallelGroup : paraGroups) {
-      if (iParallelGroup.getName().equals(pat)) {
+      if (iParallelGroup.getName().equals(pat.replaceAll("^.+\\.", ""))) {
         patFound = true;
         iParallelGroup.setBypass(bypass);
       } else {
