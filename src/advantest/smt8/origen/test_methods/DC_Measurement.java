@@ -243,21 +243,31 @@ public class DC_Measurement extends Base {
     {
         ds.addDcVI(_pin).setDisconnect(true).setDisconnectModeHiz()
             .vforce(_actionForce).setForceValue(_forceValue).setIclamp("0.1uA");
-    ds.addDcVI(_pin).imeas(_actionName);
+    ds.addDcVI(_pin).imeas(_actionName).setIrange(_iRange);
     }
 
     else{
             {ds.addDcVI(_pin).setDisconnect(true).setDisconnectModeHiz()
-                    .iforce(_actionForce).setForceValue(_forceValue); // investigate i clamp.setIclamp("0.1uA");
+                    .iforce(_actionForce).setForceValue(_forceValue).setVclampHigh(_VclampHigh).setVclampLow(_VclampLow); // investigate i clamp.setIclamp("0.1uA");
           ds.addDcVI(_pin).vmeas(_actionName);
             }
     }
 
     ds.sequentialBegin("PatAndShutdownSeq");
     {
+        ds.parallelBegin();
       ds.patternCall(measurement.getPatternName());
+      ds.parallelEnd();
+      ds.parallelBegin();
+
       ds.actionCall(_actionForce);
+
+      ds.parallelEnd();
+      ds.parallelBegin();
+
       ds.actionCall(_actionName);
+      ds.parallelEnd();
+
       if (_applyShutdown) {
         ds.patternCall(_shutdownPattern);
       }
