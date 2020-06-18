@@ -172,22 +172,11 @@ public class DC_Measurement extends Base {
 
     if (_applyShutdown) {
       if (_shutdownPattern.isEmpty()) {
-        // TODO Fix the relative paths for the shutdownpattern
-        shutdownPattern(measurement.getPatternName() + "_part1");
-        //String workingDirectory = System.getProperty("user.dir");/
-        String workingDirectory = IWorkspace.getActiveProjectPath();
-        String[] parts = _shutdownPattern.split("\\.");
-        String file = workingDirectory + "/src/c28tsmcnvmtester_nfc/patterns/" + parts[2] + ".pat";
-        File f = new File(measurement.getPatternName());
-        if (f.exists()) {
-          message(Origen.LOG_METHODTRACE, "Shutdown pattern " + file + " found, using it.");
-        } else {
           message(
-              Origen.LOG_FAIL,
-              "Shutdown pattern " + file + " not found, NOT using a shutdown pattern!");
-          applyShutdown(false);
-          shutdownPattern("");
-        }
+                  Origen.LOG_FAIL,
+                  "Shutdown pattern not provide, NOT using a shutdown pattern!");
+              applyShutdown(false);
+              shutdownPattern("");
       }
     }
 
