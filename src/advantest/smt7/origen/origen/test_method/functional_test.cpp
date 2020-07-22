@@ -94,13 +94,13 @@ void FunctionalTest::_execute() {
     } else {
       SMART_RDI::DIG_CAP& prdi = rdi.port(_port)
                                      .digCap(suiteName)
-                                     .vecVarOnly()
+                                     .label(label)
                                      .pin(pinName)
                                      .bitPerWord(_bitPerWord)
                                      .samples(_capture);
       filterRDI(prdi);
       prdi.execute();
-      rdi.port(_port).func().burst(label).execute();
+
     }
 
   } else {
