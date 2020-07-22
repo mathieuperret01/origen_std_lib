@@ -79,7 +79,7 @@ void FunctionalTest::_execute() {
     pinName = extractPinsFromGroup(_pin);
   }
 
-  RDI_BEGIN();
+  RDI_BEGIN(TA::SINGLE);
 
   if (_capture) {
     if (_port.empty()) {

@@ -16,6 +16,7 @@ DCMeasurement::DCMeasurement() {
 	processResults(1);
 	badc(0);
 	port("");
+	clamp(0, 5); // clamp for TP360 release checker only support voltage measurement
 }
 
 DCMeasurement::~DCMeasurement() { }
@@ -31,6 +32,7 @@ DCMeasurement & DCMeasurement::forceValue(double v) { _forceValue = v; return *t
 DCMeasurement & DCMeasurement::iRange(double v) { _iRange = v; return *this; }
 DCMeasurement & DCMeasurement::processResults(int v) { _processResults = v; return *this; }
 DCMeasurement & DCMeasurement::badc(int v) { _badc = v; return *this; }
+DCMeasurement & DCMeasurement::clamp(double v, double y) { _clampLo = v, _clampHi = y; return *this; }
 
 // All test methods must implement this function
 DCMeasurement & DCMeasurement::getThis() { return *this; }
@@ -99,14 +101,8 @@ void DCMeasurement::_execute() {
 		if (cLow == TM::NA) {
 			dLow = 0;
 		}
-		else{
-			dLow = 0;
-		}
 		if (cHigh == TM::NA) {
-			dHigh = 3.63;
-		}
-		else{
-			dHigh += 0.5;
+			dHigh = 0;
 		}
 
 		if (_badc) {
@@ -145,7 +141,7 @@ void DCMeasurement::_execute() {
 
 					SMART_RDI::dcBase & prdi = rdi.dc(suiteName)
                                         		  .pin(_pin)
-                                        		  .clamp(dLow, dHigh)
+                                        		  .clamp(_clampLo, _clampHi)
                                         		  .iForce(_forceValue)
                                         		  .vRange(4 V)
                                         		  .measWait(_settlingTime)
@@ -161,7 +157,7 @@ void DCMeasurement::_execute() {
 			} else {
 				SMART_RDI::dcBase & prdi = rdi.port(_port).dc(suiteName)
                                         		.pin(_pin)
-                                        		.clamp(dLow, dHigh)
+                                                .clamp(_clampLo, _clampHi)
                                         		.iForce(_forceValue)
                                         		.measWait(_settlingTime)
                                         		.relay(TA::ppmuRly_onPPMU_offACDC,TA::ppmuRly_onAC_offDCPPMU)
