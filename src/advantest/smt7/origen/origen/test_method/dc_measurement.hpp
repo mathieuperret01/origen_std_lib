@@ -24,6 +24,8 @@ class DCMeasurement : public Base {
   double _iRange;
   int _processResults;
   int _badc;
+  double _clampLo;
+  double _clampHi;
 
  public:
   DCMeasurement();
@@ -41,6 +43,7 @@ class DCMeasurement : public Base {
   DCMeasurement& iRange(double v);
   DCMeasurement& processResults(int v);
   DCMeasurement& badc(int v);
+  DCMeasurement& clamp(double v, double y);
 
  protected:
   typedef DCMeasurement super;
