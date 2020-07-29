@@ -21,7 +21,7 @@ import xoc.dta.testdescriptor.IParametricTestDescriptor;
 /** The Function test template for all functional tests */
 public class Functional_test extends Base {
 
-  public IParametricTestDescriptor PTD;
+  public IParametricTestDescriptor FUNC;
 
   // Class variables
 
@@ -459,13 +459,13 @@ public class Functional_test extends Base {
             }
         }
         if (funcResult != null) {
-            judgeAndDatalog(PTD, ftd2Ptd(dynamicPassed.and(funcResult.hasPassed())));
+            judgeAndDatalog(FUNC, ftd2Ptd(dynamicPassed.and(funcResult.hasPassed())));
         } else {
-            judgeAndDatalog(PTD, ftd2Ptd(dynamicPassed));
+            judgeAndDatalog(FUNC, ftd2Ptd(dynamicPassed));
         }
     } else {
         if (funcResult != null) {
-            judgeAndDatalog(PTD, ftd2Ptd(funcResult));
+            judgeAndDatalog(FUNC, ftd2Ptd(funcResult));
         }
     }
   }
