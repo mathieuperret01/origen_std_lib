@@ -231,7 +231,7 @@ public class DC_Measurement extends Base {
     if (_measure == MEAS.CURR)
     {
         ds.addDcVI(_pin).setDisconnect(true).setDisconnectModeHiz()
-            .vforce(_actionForce).setForceValue(_forceValue).setIclamp("0.1uA");
+            .vforce(_actionForce).setForceValue(_forceValue).setIclamp("100uA");
     ds.addDcVI(_pin).imeas(_actionName).setIrange(_iRange);
     }
 
