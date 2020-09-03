@@ -26,31 +26,31 @@ public class Functional_test extends Base {
   // Class variables
 
   /** Pin to capture from */
-  private String _pin;
+  protected String _pin;
 
   /** Number of vectors to capture */
-  private int _capture;
+  protected int _capture;
 
   /** Number of bits per captured word */
   private int _bitPerWord;
 
   /** Pattern name */
-  private String _pattern;
+  protected String _pattern;
 
   /** Testname to override */
   private String _testNameOverride;
 
   /** The result of executing the primary pattern */
-  private IMeasurementResult funcResult;
+  protected IMeasurementResult funcResult;
 
-  private MultiSiteBitSequence _capturedData;
+  protected MultiSiteBitSequence _capturedData;
 
   // Link to self
   public Functional_test origen;
 
   // Patching information
   /** Do we need to activate the patched patterns? */
-  boolean activatePatchedMeas;
+  protected boolean activatePatchedMeas;
 
   /** The measurement that is only used for patching */
   public IMeasurement patchedMeas;
