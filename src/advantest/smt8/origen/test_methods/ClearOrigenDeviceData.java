@@ -2,13 +2,11 @@ package origen.test_methods;
 
 import origen.common.OrigenDeviceData;
 
-public class InitializeDeviceData extends Base {
+public class ClearOrigenDeviceData extends Base {
 
     @Override
     public void execute() {
         OrigenDeviceData.clearStorage();
-
-        OrigenDeviceData devData = OrigenDeviceData.getInstance(this);
     }
 
 }
