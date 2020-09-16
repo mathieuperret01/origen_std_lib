@@ -40,7 +40,7 @@ public class Functional_test extends Base {
   /** Testname to override */
   private String _testNameOverride;
 
-  /** variable to catch fail if app doesn't defined
+  /** variable to catch fail if app doesn't defined */
   protected String prefixDSAgen;
 
   /** The result of executing the primary pattern */
