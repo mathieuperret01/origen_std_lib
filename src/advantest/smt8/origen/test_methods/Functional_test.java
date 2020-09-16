@@ -40,6 +40,9 @@ public class Functional_test extends Base {
   /** Testname to override */
   private String _testNameOverride;
 
+  /** variable to catch fail if app doesn't defined
+  protected String prefixDSAgen;
+
   /** The result of executing the primary pattern */
   protected IMeasurementResult funcResult;
 
@@ -154,7 +157,14 @@ public class Functional_test extends Base {
   }
 
   public Functional_test setupDynamicPatternList() {
-    IDeviceSetup ds = DeviceSetupFactory.createInstance();
+    IDeviceSetup ds = null;
+      if (prefixDSAgen == null) {
+          ds = DeviceSetupFactory.createInstance();
+      }
+      else {
+          ds = DeviceSetupFactory.createInstance(prefixDSAgen);
+      }
+
     ds.importSpec(dynamicPatMeas.getSpecificationName());
     for (String pat : dynamicPatternList) {
       ds.parallelBegin(pat.replaceAll("^.+\\.", ""));

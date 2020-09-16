@@ -208,11 +208,10 @@ public class Base extends TestMethod {
    */
   public void judgeAndDatalog(IParametricTestDescriptor t, MultiSiteDouble MSD) {
 
+    boolean loLimitPresent = false, hiLimitPresent = false;
+    double lo = 0;
+    double hi = 0;
     if (forcePass) {
-      boolean loLimitPresent, hiLimitPresent;
-      double lo = 0;
-      double hi = 0;
-
       if (t.getLowLimit() == null) {
         loLimitPresent = false;
       } else {
@@ -252,6 +251,15 @@ public class Base extends TestMethod {
     }
 
     t.evaluate(MSD);
+
+    if (forcePass) {
+        if(loLimitPresent) {
+            t.setLowLimit(lo);
+        }
+        if(hiLimitPresent) {
+            t.setHighLimit(hi);
+        }
+    }
 
     MultiSiteBoolean pf = t.getPassFail();
     for (int site : context.getActiveSites()) {
