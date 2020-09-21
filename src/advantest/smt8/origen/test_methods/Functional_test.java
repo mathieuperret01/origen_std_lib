@@ -431,47 +431,7 @@ public class Functional_test extends Base {
     // Run the measurement
     measurement.execute();
 
-    //funcResult = measurement.preserveResult();
-    /** This is a temporary workaround.
-
-     * Preserve results here sometimes fails with error:
-
-     * "The Measurement run has no valid results anymore"
-
-     * A potential root cause for this may be an unfinished background vector patching from
-
-     * preceding TRIM tests. This background patching is now removed, but keeping this try/catch
-
-     * to monitor the issue.
-
-     */
-
-    try {
-
-        funcResult = measurement.preserveResult();
-
-    }
-
-    catch (UncheckedDTAException e)
-
-    {
-
-        System.err.println("CAUGHT CRITICAL ISSUE. preserveResults() in NVM Functional Test fails.\n"
-
-                    + "Testsuite: " + context.getTestSuiteName()+ "\n"
-
-                    + "All sites will be logged as FAIL. But testprogram can continue.");
-
-        System.err.println(e.getMessage());
-
-        e.printStackTrace();
-
-        funcResult = null;
-
-        boolean preserveResultsCriticalIssue = true;
-
-    }
-
+    funcResult = measurement.preserveResult();
 
     // When captured was enabled, we need to load the captured data for later processing
     // After this is done, the tester can be released
