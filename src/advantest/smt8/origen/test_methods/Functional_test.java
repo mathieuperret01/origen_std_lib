@@ -7,7 +7,6 @@ import origen.common.Origen;
 import origen.common.OrigenHelpers;
 import xoc.dsa.DeviceSetupFactory;
 import xoc.dsa.IDeviceSetup;
-import xoc.dta.UncheckedDTAException;
 import xoc.dta.datatypes.MultiSiteBoolean;
 import xoc.dta.datatypes.MultiSiteLong;
 import xoc.dta.datatypes.MultiSiteString;
@@ -65,8 +64,6 @@ public class Functional_test extends Base {
   ArrayList<IMeasurementResult> dynamicMeasurementResults;
 
   boolean _hasDynamicMeas = false;
-
-  boolean preserveResultsCriticalIssue  = false;
 
   /** The list of patterns to patch */
   List<String> patchList;
@@ -142,7 +139,13 @@ public class Functional_test extends Base {
    * @return
    */
   public Functional_test setupPatch() {
-    IDeviceSetup ds = DeviceSetupFactory.createInstance();
+    IDeviceSetup ds = null;
+      if (prefixDSAgen == null) {
+          ds = DeviceSetupFactory.createInstance();
+      }
+      else {
+          ds = DeviceSetupFactory.createInstance(prefixDSAgen);
+      }
     ds.importSpec(measurement.getSpecificationName());
     ds.sequentialBegin("measPatch");
     {
@@ -461,21 +464,6 @@ public class Functional_test extends Base {
   @Override
   public void processResults() {
     logTrace("Functional_test", "processResults");
-
-    if (preserveResultsCriticalIssue)
-
-    {
-
-        //Log all sites as FAIL
-
-        judgeAndDatalog(FUNC, ftd2Ptd(new MultiSiteBoolean(false)));
-
-        preserveResultsCriticalIssue = false;
-
-        return;
-
-    }
-
 
     if(_hasDynamicMeas && dynamicMeasurementResults.size() > 0) {
         MultiSiteBoolean dynamicPassed = null;
