@@ -39,14 +39,14 @@ public class Origen {
   private static MultiSiteLong _y;
   private static boolean _ySet;
 
+  public static ITestContext context;
+  public static IMeasurement meas;
+
   private static MultiSiteLong _blockCycles;
   private static boolean _blockCyclesSet;
 
   private static MultiSiteLong _pageCycles;
   private static boolean _pageCyclesSet;
-
-  public static ITestContext context;
-  public static IMeasurement meas;
 
   /**
    * Implementing the SMT8 message system also for this non-TM class. Perhaps not the prettiest
@@ -55,7 +55,6 @@ public class Origen {
    * @param level
    * @param msg
    */
-  @SuppressWarnings("deprecation")
   public static void message(int level, String msg) {
     // No longer works on SMT 8.2, should this function be removed completely?
     // context.message(level,msg);
@@ -172,13 +171,14 @@ public class Origen {
    */
   public static MultiSiteString lotid() {
     if (!_lotidSet) {
-      MultiSiteString lot_id =
-          context.testProgram().variables().getString("STDF.WAFER_ID"); // for use with prober
-      //            MultiSiteString lot_id = new MultiSiteString("TR7T7290W25D0"); // for debug
-      // purpose
+
+      MultiSiteString lot_id = new MultiSiteString("TR7T7290W25D0");
+
+      if(!context.testProgram().variables().getString("mi8_recipe_version").get().isEmpty()) {
+          lot_id = context.testProgram().variables().getString("STDF.WAFER_ID"); //for use with prober
+      }
 
       MultiSiteString batch_id = new MultiSiteString();
-      MultiSiteString offlineLotID = new MultiSiteString("QA23456");
       for (int site : context.getActiveSites()) {
         String perSiteWID = lot_id.get(site); // per site string contains batch id & wafer number
         String sBatch =
@@ -186,10 +186,6 @@ public class Origen {
                 0, Math.min(perSiteWID.length(), 8)); // this will give you batch id
         batch_id.set(site, sBatch);
         System.out.println("Wafer batch " + sBatch);
-      }
-      
-      if (context.testProgram().variables().getBoolean("SYS.OFFLINE").equalTo(true)) {
-          batch_id = offlineLotID;
       }
 
       _lotid = batch_id; // store the batch number
@@ -233,18 +229,15 @@ public class Origen {
    * queried from the test system.
    */
   public static MultiSiteLong wafer() {
-    MultiSiteString offlineWafer = new MultiSiteString("W25D0");
     if (!_waferSet) {
-      MultiSiteString wafer_id =
-          context.testProgram().variables().getString("STDF.WAFER_ID"); // for use with prober
-      //            MultiSiteString wafer_id = new MultiSiteString("TR7T7290W55D0"); // for debug
-      // purpose
+ 
+      MultiSiteString wafer_id = new MultiSiteString("TR7T7290W55D0");
 
-      // Expect to return something like "TR7T7290W25D0)", where 25 is the wafer number
-
-      if (context.testProgram().variables().getBoolean("SYS.OFFLINE").equalTo(true)) {
-         wafer_id = offlineWafer;
+      if(!context.testProgram().variables().getString("mi8_recipe_version").get().isEmpty()) {
+          wafer_id = context.testProgram().variables().getString("STDF.WAFER_ID"); //for use with prober
+          // Expect to return something like "TR7T7290W25D0)", where 25 is the wafer number
       }
+
       MultiSiteLong mslWnum = new MultiSiteLong(0);
       for (int site : context.getActiveSites()) {
         String perSiteWID = wafer_id.get(site); // per site string contains batch id & wafer number
@@ -270,12 +263,14 @@ public class Origen {
 
   /** Query the X and Y coordinates from the test system and set them for all sites. */
   public static void setXY() {
-    MultiSiteLong offlineX = new MultiSiteLong(99);
-    MultiSiteLong offlineY = new MultiSiteLong(99);
-    MultiSiteLong x_coord =
-        context.testProgram().variables().getLong("STDF.X_COORD"); // for use with probe
-    MultiSiteLong y_coord =
-        context.testProgram().variables().getLong("STDF.Y_COORD"); // for use with probe
+
+    MultiSiteLong x_coord = new MultiSiteLong(90); // for debug purpose
+    MultiSiteLong y_coord = new MultiSiteLong(100); // for debug purpose
+
+    if(!context.testProgram().variables().getString("mi8_recipe_version").get().isEmpty()) {
+        x_coord =context.testProgram().variables().getLong("STDF.X_COORD"); //for use with probe
+        y_coord =context.testProgram().variables().getLong("STDF.Y_COORD"); //for use with probe
+    }
 
     //        MultiSiteLong x_coord = new MultiSiteLong(90); // for debug purpose
     //        MultiSiteLong y_coord = new MultiSiteLong(100); // for debug purpose
@@ -301,10 +296,6 @@ public class Origen {
     //         _x = (int) lx;
     //         _y = (int) ly;
 
-    if (context.testProgram().variables().getBoolean("SYS.OFFLINE").equalTo(true)) {
-        x_coord = offlineX;
-        y_coord = offlineY;
-    }
     _x = x_coord;
     _y = y_coord;
     //       _xSet = true;
