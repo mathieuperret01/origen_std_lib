@@ -73,6 +73,7 @@ public class OrigenData {
       }
     }
     Collections.sort(list);
+    Collections.reverse(list);
     return list;
   }
 
@@ -222,6 +223,17 @@ public class OrigenData {
         "Not all sites have the same data, cannot give common data for this addr: " + addr);
   }
 
+    /**
+   * Returns the common data for all sites.
+   * @param site : any site active
+   * @param addr : addr
+   * @return
+   */
+  public long[] getDataCommon(int site, long addr) {
+      return getDataPerSite(site, addr);
+
+  }
+
   /**
    * Returns the site specific data for an address, returning -1 for the data if it has not been
    * previously set
@@ -231,6 +243,17 @@ public class OrigenData {
    */
   public MultiSiteLongArray getDataMSLA(long addr) {
     return getDataMSLA(addr, false, "");
+  }
+
+   /**
+   * Returns the site specific data for an address, returning -1 for the data if it has not been
+   * previously set
+   * @param site
+   * @param addr
+   * @return
+   */
+  public long[] getDataMSLA(int site, long addr) {
+    return getDataMSLA(site, addr, true, "");
   }
 
   /**
@@ -273,6 +296,20 @@ public class OrigenData {
       }
       return result;
     }
+
+  
+  private long[] getDataMSLA(int site, long addr, boolean errorOnNotSet, String errorMsg) {
+      long[] result = null;
+        if (addrIsSet(site, addr)) {
+          result = getDataPerSite(site, addr);
+        } else {
+          if (errorOnNotSet) {
+            throw new Error("No Address set for site: " + site + "@addr: 0X" + Long.toHexString(addr));
+          }
+        }
+      return result;
+    }
+
   /**
    * Returns whether or not all the sites have the same data for this addr
    *
