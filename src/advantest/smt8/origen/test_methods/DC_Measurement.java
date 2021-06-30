@@ -1,7 +1,5 @@
 package origen.test_methods;
 
-import java.io.File;
-
 import origen.common.Origen;
 import origen.common.OrigenHelpers;
 import xoc.dsa.DeviceSetupFactory;
@@ -14,7 +12,6 @@ import xoc.dta.resultaccess.IDcVIResults.IVmeasResults;
 import xoc.dta.resultaccess.IMeasurementResult;
 import xoc.dta.testdescriptor.IFunctionalTestDescriptor;
 import xoc.dta.testdescriptor.IParametricTestDescriptor;
-import xoc.dta.workspace.IWorkspace;
 
 /** An example test method using test descriptor */
 public class DC_Measurement extends Base {
@@ -48,6 +45,9 @@ public class DC_Measurement extends Base {
   String _actionName;
   String _actionForce;
   public DC_Measurement origen;
+
+  /** variable to catch fail if app doesn't defined */
+  protected String prefixDSAgen;
 
   static OrigenHelpers origenHelpers;
 
@@ -140,6 +140,7 @@ public class DC_Measurement extends Base {
 
   @Override
   public void _setup() {
+    prefixDSAgen = context.testProgram().variables().getString("OPERATION_TYPE").get();
     message(10, "DC_Measurement --> _Setup");
     origen = this;
     pin("NVM_ANALOGIO");
@@ -181,7 +182,7 @@ public class DC_Measurement extends Base {
     }
 
     // Create an action sequence for the measurement
-    IDeviceSetup ds = DeviceSetupFactory.createInstance();
+    IDeviceSetup ds = DeviceSetupFactory.createInstance(prefixDSAgen);
     ds.importSpec(measurement.getSpecificationName());
 
     //        ISetupDigInOut dcVISetup = ds.addDigInOut("NVM_ANA_PIN");
