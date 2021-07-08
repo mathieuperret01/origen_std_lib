@@ -61,9 +61,9 @@ public class Functional_test extends Base {
   /** The measurement that is only used dynamic pattern switching */
   public IMeasurement dynamicPatMeas;
 
-  ArrayList<IMeasurementResult> dynamicMeasurementResults;
+  protected ArrayList<IMeasurementResult> dynamicMeasurementResults;
 
-  boolean _hasDynamicMeas = false;
+  protected boolean _hasDynamicMeas = false;
 
   /** The list of patterns to patch */
   List<String> patchList;
