@@ -140,7 +140,10 @@ public class OrigenData {
     return _anythingSet;
   }
   /**
-   * Set data on 1 specific site for 1 address
+   * Set data[] on 1 specific site for 1 address
+   * Use this function when the size of data is > 64bits (max size of a long variable)
+   * Split the data in an array of long with the same size
+   * For ex: C28ESF3 has a data of 136bits, so data = [34bits, 34bits, 34bits, 34bits]
    *
    * @param site
    * @param addr
@@ -166,9 +169,42 @@ public class OrigenData {
     mem_addr.set(site, a);
     _anythingSet = true;
   }
+  
+  /**
+   * Set data on 1 specific site for 1 address
+   * Use this function when the size of data is <= 64bits (max size of a long variable)
+   * For ex: C402T has a data of 32bits, so data = 32bits
+   * 
+   * @param site
+   * @param addr
+   * @param data
+   */
+  public void setDataOnSitesmallData(int site, long addr, long data) {
+    long[] a = mem_addr.get(site);
+    long[][] d = mem_data.get(site);
+    if (a == null) {
+      a = new long[0];
+    }
+    if (d == null) {
+      d = new long[0][0];
+    }
+    int loc = valInAddr(a, addr);
+    if (loc == d.length) {
+      d = expand(d);
+      a = expand(a);
+    }
+
+    long[] data0 = new long[] {data};
+    d[loc] = data0;
+    a[loc] = addr;
+    mem_data.set(site, d);
+    mem_addr.set(site, a);
+    _anythingSet = true;
+  }
 
   /**
-   * Set the data for a certain 32bit addr
+   * Set the data[] for a certain 32bit addr
+   * Used for data size > 64bits (like C28ESF3, 136 bits)
    *
    * @param addr
    * @param data
@@ -176,6 +212,19 @@ public class OrigenData {
   public void setData(long addr, long[] data) {
     for (int site : mem_data.getActiveSites()) {
       setDataOnSite(site, addr, data);
+    }
+  }
+
+  /**
+   * Set the data for a certain 32bit addr
+   * Used for data size <= 64bits (like C402T, 32 bits)
+   *
+   * @param addr
+   * @param data
+   */
+  public void setDatasmallData(long addr, long data) {
+    for (int site : mem_data.getActiveSites()) {
+      setDataOnSitesmallData(site, addr, data);
     }
   }
 
@@ -208,7 +257,8 @@ public class OrigenData {
   }
 
   /**
-   * Returns the common data for all sites. Throws an error if this specific address is
+   * Returns the common data[] for all sites. Throws an error if this specific address is
+   * Used for data size > 64bits (like C28ESF3, 136 bits)
    * site-specific
    *
    * @param addr
@@ -223,8 +273,26 @@ public class OrigenData {
         "Not all sites have the same data, cannot give common data for this addr: " + addr);
   }
 
+  /**
+   * Returns the common data for all sites. Throws an error if this specific address is
+   * Used for data size <= 64bits (like C402T, 32 bits)
+   * site-specific
+   *
+   * @param addr
+   * @return
+   */
+  public long getDataCommonsmallData(long addr) {
+    int sites[] = mem_data.getActiveSites();
+    if (allSitesTheSame(addr)) {
+      return getDataPerSite(sites[0], addr)[0];
+    }
+    throw new Error(
+        "Not all sites have the same data, cannot give common data for this addr: " + addr);
+  }
+
     /**
-   * Returns the common data for all sites.
+   * Returns the common data[] for all sites.
+   * Used for data size > 64bits (like C28ESF3, 136 bits)
    * @param site : any site active
    * @param addr : addr
    * @return
@@ -234,9 +302,22 @@ public class OrigenData {
 
   }
 
+   /**
+   * Returns the common data for all sites.
+   * Used for data size <= 64bits (like C402T, 32 bits)
+   * @param site : any site active
+   * @param addr : addr
+   * @return
+   */
+  public long getDataCommonsmallData(int site, long addr) {
+    return getDataPerSite(site, addr)[0];
+
+}
+
   /**
-   * Returns the site specific data for an address, returning -1 for the data if it has not been
+   * Returns the site specific data[] for an address, returning -1 for the data if it has not been
    * previously set
+   * Used for data size > 64bits (like C28ESF3, 136 bits)
    *
    * @param addr
    * @return
@@ -244,6 +325,19 @@ public class OrigenData {
   public MultiSiteLongArray getDataMSLA(long addr) {
     return getDataMSLA(addr, false, "");
   }
+
+  /**
+   * Returns the site specific data for an address, returning -1 for the data if it has not been
+   * previously set
+   * Used for data size <= 64bits (like C402T, 32 bits)
+   * 
+   * @param addr
+   * @return
+   */
+  public MultiSiteLong getDataMSLsmallData(long addr) {
+    return getDataMSLsmallData(addr, false, "");
+  }
+
 
    /**
    * Returns the site specific data for an address, returning -1 for the data if it has not been
@@ -257,8 +351,9 @@ public class OrigenData {
   }
 
   /**
-   * Returns the site specific data for an address, but raising and error with the given message if
+   * Returns the site specific data[] for an address, but raising and error with the given message if
    * the data has not been previously set
+   * Used for data size > 64bits (like C28ESF3, 136 bits)
    *
    * @param addr
    * @return
@@ -267,21 +362,28 @@ public class OrigenData {
     return getDataMSLA(addr, true, errorMsg);
   }
 
-//  private MultiSiteLong getDataMSL(long addr, boolean errorOnNotSet, String errorMsg) {
-//    MultiSiteLong result = new MultiSiteLong();
-//    for (int site : mem_data.getActiveSites()) {
-//      if (addrIsSet(site, addr)) {
-//        result.set(site, getDataPerSite(site, addr));
-//      } else {
-//        if (errorOnNotSet) {
-//          throw new Error(errorMsg);
-//        }
-//        result.set(site, -1);
-//      }
-//    }
-//    return result;
-//  }
+  /**
+   * Returns the site specific data for an address, but raising and error with the given message if
+   * the data has not been previously set
+   * Used for data size <= 64bits (like C402T, 32 bits)
+   *
+   * @param addr
+   * @return
+   */
+  public MultiSiteLong getDataMSLsmallData(long addr, String errorMsg) {
+    return getDataMSLsmallData(addr, true, errorMsg);
+  }
 
+  /**
+   * Returns the specific data[] for an address for all sites, but raising and error with the given message if
+   * the data has not been previously set
+   * Used for data size > 64bits (like C28ESF3, 136 bits)
+   *
+   * @param addr
+   * @boolean error
+   * @return
+   * 
+   */
   private MultiSiteLongArray getDataMSLA(long addr, boolean errorOnNotSet, String errorMsg) {
       MultiSiteLongArray result = new MultiSiteLongArray();
       for (int site : mem_data.getActiveSites()) {
@@ -297,7 +399,42 @@ public class OrigenData {
       return result;
     }
 
-  
+  /**
+   * Returns the specific data for an address for all sites, but raising and error with the given message if
+   * the data has not been previously set
+   * Used for data size <= 64bits (like C402T, 32 bits)
+   *
+   * @param addr
+   * @boolean error
+   * @return
+   * 
+   */
+  private MultiSiteLong getDataMSLsmallData(long addr, boolean errorOnNotSet, String errorMsg) {
+      MultiSiteLongArray result = new MultiSiteLongArray();
+      for (int site : mem_data.getActiveSites()) {
+        if (addrIsSet(site, addr)) {
+          result.set(site, getDataPerSite(site, addr));
+        } else {
+          if (errorOnNotSet) {
+            throw new Error(errorMsg);
+          }
+          result.set(site, new long[] {-1,-1,-1,-1}); // 4 parts (each parts corresponds to 34bits)
+        }
+      }
+      return result.getElement(0);
+    }
+
+  /**
+   * Returns the specific data[] for an address for a specific site, but raising and error with the given message if
+   * the data has not been previously set
+   * Used for data size > 64bits (like C28ESF3, 136 bits)
+   *
+   * @param site
+   * @param addr
+   * @boolean error
+   * @return
+   * 
+   */
   private long[] getDataMSLA(int site, long addr, boolean errorOnNotSet, String errorMsg) {
       long[] result = null;
         if (addrIsSet(site, addr)) {
@@ -311,12 +448,35 @@ public class OrigenData {
     }
 
   /**
+   * Returns the specific data for an address for a specific site, but raising and error with the given message if
+   * the data has not been previously set
+   * Used for data size <= 64bits (like C402T, 32 bits)
+   *
+   * @param site
+   * @param addr
+   * @boolean error
+   * @return
+   * 
+   */
+  private long getDataMSLsmallData(int site, long addr, boolean errorOnNotSet, String errorMsg) {
+      long[] result = null;
+        if (addrIsSet(site, addr)) {
+          result = getDataPerSite(site, addr);
+        } else {
+          if (errorOnNotSet) {
+            throw new Error("No Address set for site: " + site + "@addr: 0X" + Long.toHexString(addr));
+          }
+        }
+      return result[0];
+    }
+
+  /**
    * Returns whether or not all the sites have the same data for this addr
    *
    * @param addr
    * @return
    */
-public boolean allSitesTheSame(long addr) {
+  public boolean allSitesTheSame(long addr) {
     long[] commonData = new long[]{-1,-1,-1,-1};
     boolean addrFound = false, addrNotFound = false;
     for (int site : mem_data.getActiveSites()) {
