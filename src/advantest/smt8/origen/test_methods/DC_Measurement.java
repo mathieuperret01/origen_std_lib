@@ -140,7 +140,7 @@ public class DC_Measurement extends Base {
 
   @Override
   public void _setup() {
-    prefixDSAgen = context.testProgram().variables().getString("OPERATION_TYPE").get();
+    //prefixDSAgen = context.testProgram().variables().getString("OPERATION_TYPE").get();
     message(10, "DC_Measurement --> _Setup");
     origen = this;
     pin("NVM_ANALOGIO");
@@ -182,7 +182,7 @@ public class DC_Measurement extends Base {
     }
 
     // Create an action sequence for the measurement
-    IDeviceSetup ds = DeviceSetupFactory.createInstance(prefixDSAgen);
+    IDeviceSetup ds = DeviceSetupFactory.createInstance(); //prefixDSAgen);
     ds.importSpec(measurement.getSpecificationName());
 
     //        ISetupDigInOut dcVISetup = ds.addDigInOut("NVM_ANA_PIN");
