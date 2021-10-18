@@ -118,10 +118,8 @@ public class OrigenHelpers {
     if (size > 64) {
       throw new NumberFormatException("Cannot patch more than 64 bits using Long");
     }
-    if (decData != -1) {
-      String data = longToPaddedBinaryString(decData, size, BitOrder.LEFT_TO_RIGHT, false);
-      subroutinePattern.vector(0).writeStateChar(data.toCharArray(), pin);
-    }
+    String data = longToPaddedBinaryString(decData, size, BitOrder.LEFT_TO_RIGHT, false);
+    subroutinePattern.vector(0).writeStateChar(data.toCharArray(), pin);
   }
 
   public static String longToPaddedHexString(Long data, int size, BitSequence.BitOrder order) {
@@ -158,11 +156,8 @@ public class OrigenHelpers {
     IStateCharBuffer scBuf = subroutinePattern.createStateCharBuffer();
     for (int site : sites) {
       long longData = decData.get(site);
-      // Only patch if data != -1, this can be used to not patch data on certain sites
-      if (longData != -1) {
-        String data = longToPaddedBinaryString(longData, size, BitOrder.LEFT_TO_RIGHT, false);
-        scBuf.writeStateChar(site, 0, pin, data.toCharArray());
-      }
+      String data = longToPaddedBinaryString(longData, size, BitOrder.LEFT_TO_RIGHT, false);
+      scBuf.writeStateChar(site, 0, pin, data.toCharArray());
     }
 
     scBuf.flush();
